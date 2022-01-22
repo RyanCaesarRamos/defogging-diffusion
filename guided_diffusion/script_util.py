@@ -3,7 +3,7 @@ import inspect
 
 from . import gaussian_diffusion as gd
 from .respace import SpacedDiffusion, space_timesteps
-from .unet import SuperResModel, UNetModel, EncoderUNetModel
+from .unet import DefogModel, UNetModel, EncoderUNetModel
 
 NUM_CLASSES = 1000
 
@@ -266,20 +266,18 @@ def create_classifier(
     )
 
 
-def sr_model_and_diffusion_defaults():
+def df_model_and_diffusion_defaults():
     res = model_and_diffusion_defaults()
-    res["large_size"] = 256
-    res["small_size"] = 64
-    arg_names = inspect.getfullargspec(sr_create_model_and_diffusion)[0]
+    res["image_size"] = 256
+    arg_names = inspect.getfullargspec(df_create_model_and_diffusion)[0]
     for k in res.copy().keys():
         if k not in arg_names:
             del res[k]
     return res
 
 
-def sr_create_model_and_diffusion(
-    large_size,
-    small_size,
+def df_create_model_and_diffusion(
+    image_size,
     class_cond,
     learn_sigma,
     num_channels,
@@ -301,9 +299,8 @@ def sr_create_model_and_diffusion(
     resblock_updown,
     use_fp16,
 ):
-    model = sr_create_model(
-        large_size,
-        small_size,
+    model = df_create_model(
+        image_size,
         num_channels,
         num_res_blocks,
         learn_sigma=learn_sigma,
@@ -331,9 +328,8 @@ def sr_create_model_and_diffusion(
     return model, diffusion
 
 
-def sr_create_model(
-    large_size,
-    small_size,
+def df_create_model(
+    image_size,
     num_channels,
     num_res_blocks,
     learn_sigma,
@@ -348,23 +344,21 @@ def sr_create_model(
     resblock_updown,
     use_fp16,
 ):
-    _ = small_size  # hack to prevent unused variable
-
-    if large_size == 512:
+    if image_size == 512:
         channel_mult = (1, 1, 2, 2, 4, 4)
-    elif large_size == 256:
+    elif image_size == 256:
         channel_mult = (1, 1, 2, 2, 4, 4)
-    elif large_size == 64:
+    elif image_size == 64:
         channel_mult = (1, 2, 3, 4)
     else:
-        raise ValueError(f"unsupported large size: {large_size}")
+        raise ValueError(f"unsupported image size: {image}")
 
     attention_ds = []
     for res in attention_resolutions.split(","):
-        attention_ds.append(large_size // int(res))
+        attention_ds.append(image_size // int(res))
 
-    return SuperResModel(
-        image_size=large_size,
+    return DefogModel(
+        image_size=image_size,
         in_channels=3,
         model_channels=num_channels,
         out_channels=(3 if not learn_sigma else 6),
