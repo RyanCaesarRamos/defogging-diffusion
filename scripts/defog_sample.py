@@ -1,5 +1,5 @@
 """
-Generate a large batch of samples from a super resolution model, given a batch
+Generate a large batch of samples from a defogging model, given a batch
 of samples from a regular model from image_sample.py.
 """
 
@@ -13,8 +13,8 @@ import torch.distributed as dist
 
 from guided_diffusion import dist_util, logger
 from guided_diffusion.script_util import (
-    sr_model_and_diffusion_defaults,
-    sr_create_model_and_diffusion,
+    df_model_and_diffusion_defaults,
+    df_create_model_and_diffusion,
     args_to_dict,
     add_dict_to_argparser,
 )
@@ -27,8 +27,8 @@ def main():
     logger.configure()
 
     logger.log("creating model...")
-    model, diffusion = sr_create_model_and_diffusion(
-        **args_to_dict(args, sr_model_and_diffusion_defaults().keys())
+    model, diffusion = df_create_model_and_diffusion(
+        **args_to_dict(args, df_model_and_diffusion_defaults().keys())
     )
     model.load_state_dict(
         dist_util.load_state_dict(args.model_path, map_location="cpu")
