@@ -8,9 +8,10 @@ import numpy as np
 from torch.utils.data import DataLoader, Dataset
 
 
-def load_data(
+def load_paired_data(
     *,
-    data_dir,
+    tgt_data_dir,
+    src_data_dir,
     batch_size,
     image_size,
     class_cond=False,
@@ -20,13 +21,12 @@ def load_data(
 ):
     """
     For a dataset, create a generator over (images, kwargs) pairs.
-
     Each images is an NCHW float tensor, and the kwargs dict contains zero or
     more keys, each of which map to a batched Tensor of their own.
     The kwargs dict can be used for class labels, in which case the key is "y"
     and the values are integer tensors of class labels.
-
-    :param data_dir: a dataset directory.
+    :param tgt_data_dir: a dataset directory for target images.
+    :param src_data_dir: a dataset directory for images to condition on.
     :param batch_size: the batch size of each returned pair.
     :param image_size: the size to which images are resized.
     :param class_cond: if True, include a "y" key in returned dicts for class
@@ -36,19 +36,21 @@ def load_data(
     :param random_crop: if True, randomly crop the images for augmentation.
     :param random_flip: if True, randomly flip the images for augmentation.
     """
-    if not data_dir:
+    if not src_data_dir or not tgt_data_dir:
         raise ValueError("unspecified data directory")
-    all_files = _list_image_files_recursively(data_dir)
+    all_tgt_files = _list_image_files_recursively(tgt_data_dir)
+    all_src_files = _list_image_files_recursively(src_data_dir)
     classes = None
     if class_cond:
         # Assume classes are the first part of the filename,
         # before an underscore.
-        class_names = [bf.basename(path).split("_")[0] for path in all_files]
+        class_names = [bf.basename(path).split("_")[0] for path in all_tgt_files]
         sorted_classes = {x: i for i, x in enumerate(sorted(set(class_names)))}
         classes = [sorted_classes[x] for x in class_names]
-    dataset = ImageDataset(
+    dataset = PairedImageDataset(
         image_size,
-        all_files,
+        all_tgt_files,
+        all_src_files,
         classes=classes,
         shard=MPI.COMM_WORLD.Get_rank(),
         num_shards=MPI.COMM_WORLD.Get_size(),
@@ -79,11 +81,12 @@ def _list_image_files_recursively(data_dir):
     return results
 
 
-class ImageDataset(Dataset):
+class PairedImageDataset(Dataset):
     def __init__(
         self,
         resolution,
-        image_paths,
+        tgt_image_paths,
+        src_image_paths,
         classes=None,
         shard=0,
         num_shards=1,
@@ -92,35 +95,42 @@ class ImageDataset(Dataset):
     ):
         super().__init__()
         self.resolution = resolution
-        self.local_images = image_paths[shard:][::num_shards]
+        self.tgt_local_images = tgt_image_paths[shard:][::num_shards]
+        self.src_local_images = src_image_paths[shard:][::num_shards]
         self.local_classes = None if classes is None else classes[shard:][::num_shards]
         self.random_crop = random_crop
         self.random_flip = random_flip
 
     def __len__(self):
-        return len(self.local_images)
+        return len(self.tgt_local_images)
 
     def __getitem__(self, idx):
-        path = self.local_images[idx]
-        with bf.BlobFile(path, "rb") as f:
-            pil_image = Image.open(f)
-            pil_image.load()
-        pil_image = pil_image.convert("RGB")
+        tgt_path = self.tgt_local_images[idx]
+        with bf.BlobFile(tgt_path, "rb") as f:
+            tgt_pil_image = Image.open(f)
+            tgt_pil_image.load()
+        tgt_pil_image = tgt_pil_image.convert("RGB")
 
-        if self.random_crop:
-            arr = random_crop_arr(pil_image, self.resolution)
-        else:
-            arr = center_crop_arr(pil_image, self.resolution)
+        src_path = self.src_local_images[idx]
+        with bf.BlobFile(src_path, "rb") as f:
+            src_pil_image = Image.open(f)
+            src_pil_image.load()
+        src_pil_image = src_pil_image.convert("RGB")
+
+        tgt_arr = np.array(tgt_pil_image)
+        src_arr = np.array(src_pil_image)
 
         if self.random_flip and random.random() < 0.5:
-            arr = arr[:, ::-1]
+            tgt_arr = tgt_arr[:, ::-1]
+            src_arr = src_arr[:, ::-1]
 
-        arr = arr.astype(np.float32) / 127.5 - 1
+        tgt_arr = tgt_arr.astype(np.float32) / 127.5 - 1
+        src_arr = src_arr.astype(np.float32) / 127.5 - 1
 
         out_dict = {}
         if self.local_classes is not None:
             out_dict["y"] = np.array(self.local_classes[idx], dtype=np.int64)
-        return np.transpose(arr, [2, 0, 1]), out_dict
+        return np.transpose(tgt_arr, [2, 0, 1]), np.transpose(src_arr, [2, 0, 1]), out_dict
 
 
 def center_crop_arr(pil_image, image_size):
