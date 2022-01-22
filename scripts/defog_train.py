@@ -1,5 +1,5 @@
 """
-Train a super-resolution model.
+Train a defogging model.
 """
 
 import argparse
@@ -7,11 +7,11 @@ import argparse
 import torch.nn.functional as F
 
 from guided_diffusion import dist_util, logger
-from guided_diffusion.image_datasets import load_data
+from guided_diffusion.image_datasets import load_paired_data
 from guided_diffusion.resample import create_named_schedule_sampler
 from guided_diffusion.script_util import (
-    sr_model_and_diffusion_defaults,
-    sr_create_model_and_diffusion,
+    df_model_and_diffusion_defaults,
+    df_create_model_and_diffusion,
     args_to_dict,
     add_dict_to_argparser,
 )
@@ -19,29 +19,28 @@ from guided_diffusion.train_util import TrainLoop
 
 
 def main():
-    args = create_argparser().parse_args()
-
     dist_util.setup_dist()
     logger.configure()
 
     logger.log("creating model...")
-    model, diffusion = sr_create_model_and_diffusion(
-        **args_to_dict(args, sr_model_and_diffusion_defaults().keys())
+    model, diffusion = df_create_model_and_diffusion(
+        **args_to_dict(args, df_model_and_diffusion_defaults().keys())
     )
     model.to(dist_util.dev())
     schedule_sampler = create_named_schedule_sampler(args.schedule_sampler, diffusion)
 
     logger.log("creating data loader...")
-    data = load_superres_data(
-        args.data_dir,
+    data = load_defog_data(
+        args.clear_data_dir,
+        args.foggy_data_dir,
         args.batch_size,
-        large_size=args.large_size,
-        small_size=args.small_size,
+        image_size=args.image_size,
         class_cond=args.class_cond,
     )
 
     logger.log("training...")
     TrainLoop(
+        save_dir=args.save_dir,
         model=model,
         diffusion=diffusion,
         data=data,
@@ -57,19 +56,21 @@ def main():
         schedule_sampler=schedule_sampler,
         weight_decay=args.weight_decay,
         lr_anneal_steps=args.lr_anneal_steps,
+        train_steps=args.train_steps
     ).run_loop()
 
 
-def load_superres_data(data_dir, batch_size, large_size, small_size, class_cond=False):
-    data = load_data(
-        data_dir=data_dir,
+def load_defog_data(clear_data_dir, foggy_data_dir, batch_size, image_size, class_cond=False):
+    data = load_paired_data(
+        tgt_data_dir=clear_data_dir,
+        src_data_dir=foggy_data_dir,
         batch_size=batch_size,
-        image_size=large_size,
+        image_size=image_size,
         class_cond=class_cond,
     )
-    for large_batch, model_kwargs in data:
-        model_kwargs["low_res"] = F.interpolate(large_batch, small_size, mode="area")
-        yield large_batch, model_kwargs
+    for clear_large_batch, foggy_large_batch, model_kwargs in data:
+        model_kwargs["foggy"] = foggy_large_batch
+        yield clear_large_batch, model_kwargs
 
 
 def create_argparser():
@@ -88,7 +89,7 @@ def create_argparser():
         use_fp16=False,
         fp16_scale_growth=1e-3,
     )
-    defaults.update(sr_model_and_diffusion_defaults())
+    defaults.update(df_model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()
     add_dict_to_argparser(parser, defaults)
     return parser
