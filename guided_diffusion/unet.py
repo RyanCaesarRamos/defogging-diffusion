@@ -674,7 +674,7 @@ class DefogModel(UNetModel):
 
     def forward(self, x, timesteps, foggy=None, **kwargs):
         _, _, new_height, new_width = x.shape
-        x = torch.cat([x, foggy], dim=1)
+        x = th.cat([x, foggy], dim=1)
         return super().forward(x, timesteps, **kwargs)
 
 
