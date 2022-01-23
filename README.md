@@ -37,6 +37,20 @@ This table summarizes our results on image defogging:
 | NYU Depth Dataset V2 (synthetic) | 16.67 | 0.80 | 10.79 | 6.07 | 61.13 |
 | I-HAZE                           | 15.39 | 0.66 | 31.59 | 2.79 | 30.09 |
 
+Below are sample qualitative results of our model:
+
+| NYU Depth Dataset V2 (synthetic) | |
+|-|-|
+| foggy input     | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/nyu/foggy_input.png?raw=true) |
+| defogged output | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/nyu/defogged_output.png?raw=true) |
+| ground truth    | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/nyu/ground_truth.png?raw=true) |
+
+| I-HAZE | |
+|-|-|
+| foggy input     | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/ihaze/foggy_input.png?raw=true) |
+| defogged output | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/ihaze/defogged_output.png?raw=true) |
+| ground truth    | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/ihaze/ground_truth.png?raw=true) |
+
 # Training models
 
 With the following as sample hyperparameters:
