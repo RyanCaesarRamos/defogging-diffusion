@@ -41,22 +41,22 @@ Below are sample qualitative results of our model:
 
 | NYU Depth Dataset V2 (synthetic) | |
 |-|-|
-| foggy input     | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/nyu/foggy_input.png?raw=true) |
+| foggy input     | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/nyu/foggy_input.png?raw=true)    |
 | defogged output | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/nyu/defogged_output.png?raw=true) |
-| ground truth    | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/nyu/ground_truth.png?raw=true) |
+| ground truth    | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/nyu/ground_truth.png?raw=true)    |
 
 | I-HAZE | |
 |-|-|
-| foggy input     | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/ihaze/foggy_input.png?raw=true) |
+| foggy input     | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/ihaze/foggy_input.png?raw=true)     |
 | defogged output | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/ihaze/defogged_output.png?raw=true) |
-| ground truth    | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/ihaze/ground_truth.png?raw=true) |
+| ground truth    | ![](https://github.com/RyanCaesarRamos/defogging-diffusion/blob/main/sample_results/ihaze/ground_truth.png?raw=true)    |
 
 # Training models
 
 With the following as sample hyperparameters:
 
 ```
-MODEL_FLAGS="--num_channels 192 --num_res_blocks 2 --learn_sigma True --class_cond True"
+MODEL_FLAGS="--num_channels 192 --num_res_blocks 2 --learn_sigma True"
 DIFFUSION_FLAGS="--diffusion_steps 1000 --noise_schedule linear --rescale_learned_sigmas False --rescale_timesteps False"
 TRAIN_FLAGS="--lr 3e-4 --batch_size 4 --lr_anneal_steps 700"
 ```
