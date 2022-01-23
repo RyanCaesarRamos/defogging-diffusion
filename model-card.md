@@ -1,37 +1,36 @@
 # Overview
 
-These are diffusion models and noised image classifiers described in the paper [Diffusion Models Beat GANs on Image Synthesis](https://arxiv.org/abs/2105.05233).
-Included in this release are the following models:
+This repository hosts a single model trained on defogging foggy images synthesized from the NYU Depth Dataset V2 at resolution 256x256.
 
- * Noisy ImageNet classifiers at resolutions 64x64, 128x128, 256x256, 512x512
- * A class-unconditional ImageNet diffusion model at resolution 256x256
- * Class conditional ImageNet diffusion models at 64x64, 128x128, 256x256, 512x512 resolutions
- * Class-conditional ImageNet upsampling diffusion models: 64x64->256x256, 128x128->512x512
- * Diffusion models trained on three LSUN classes at 256x256 resolution: cat, horse, bedroom
+# Dataset
 
-# Datasets
+This model was trained on a synthetic dataset generated from [NYU Depth Dataset V2](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html).
+Here, we describe characteristics of this synthetic dataset which impact model behavior:
 
-All of the models we are releasing were either trained on the [ILSVRC 2012 subset of ImageNet](http://www.image-net.org/challenges/LSVRC/2012/) or on single classes of [LSUN](https://arxiv.org/abs/1506.03365).
-Here, we describe characteristics of these datasets which impact model behavior:
+**NYU Depth Dataset V2 (synthetic)**: The original dataset contains 1449 pairs of images and depth maps. The synthetic dataset was created by processing image-depth pairs and through the atmospheric scattering model <img src="https://render.githubusercontent.com/render/math?math=I=J(e^{-\beta d}) %2B A(1 - e^{-\beta d})"> where I is the synthetic foggy image, J is the original image, d is the depth from viewer, A is intensity, and beta is density. A was sampled from the range (0.7, 1.0) and beta was sampled from the range (0.2, 0.6). Images were resized to height 256 before being cropped randomly to 256x256. Each image-depth pair in the dataset was used to generate ten unique foggy samples.
 
-**LSUN**: This dataset was collected in 2015 using a combination of human labeling (from Amazon Mechanical Turk) and automated data labeling.
- * Each of the three classes we consider contain over a million images.
- * The dataset creators found that the label accuracy was roughly 90% across the entire LSUN dataset when measured by trained experts.
- * Images are scraped from the internet, and LSUN cat images in particular tend to often follow a “meme” format.
- * We found that there are occasionally humans in these photos, including faces, especially within the cat class.  
+ * The atmospheric scattering model assumes that fog is homogenous, which may not be realistic for real-life scenarios.
+ * All images from the dataset are indoor images.
 
-**ILSVRC 2012 subset of ImageNet**: This dataset was curated in 2012 and consists of roughly one million images, each belonging to one of 1000 classes.
- * A large portion of the classes in this dataset are animals, plants, and other naturally-occurring objects.
- * Many images contain humans, although usually these humans aren’t reflected by the class label (e.g. the class “Tench, tinca tinca” contains many photos of people holding fish).
+# Hyperparameters
+
+The model was trained with the following commands:
+
+```
+MODEL_FLAGS="--num_channels 192 --num_res_blocks 2 --learn_sigma True"
+DIFFUSION_FLAGS="--diffusion_steps 1000 --noise_schedule linear --rescale_learned_sigmas False --rescale_timesteps False"
+TRAIN_FLAGS="--lr 3e-4 --batch_size 4 --lr_anneal_steps 700"
+python scripts/defog_train.py --foggy_data_dir path/to/foggy/images --clear_data_dir path/to/clear/images $MODEL_FLAGS $DIFFUSION_FLAGS $TRAIN_FLAGS
+```
 
 # Performance
 
-These models are intended to generate samples consistent with their training distributions.
-This has been measured in terms of FID, Precision, and Recall.
-These metrics all rely on the representations of a [pre-trained Inception-V3 model](https://arxiv.org/abs/1512.00567),
+This models is intended to generate fog-free versions of foggy images.
+Model performance has been measured in terms of PSNR, SSIM, FID, IS, and PD.
+The latter three metrics all rely on the representations of a [pre-trained Inception-V3 model](https://arxiv.org/abs/1512.00567),
 which was trained on ImageNet, and so is likely to focus more on the ImageNet classes (such as animals) than on other visual features (such as human faces).
 
-Qualitatively, the samples produced by these models often look highly realistic, especially when a diffusion model is combined with a noisy classifier.
+Qualitatively, the samples produced by this models often leave behind dark areas and and oversaturated colors.
 
 # Intended Use
 
@@ -41,19 +40,6 @@ In particular, they can be used as a baseline for generative modeling research, 
 These models are not intended to be commercially deployed.
 Additionally, they are not intended to be used to create propaganda or offensive imagery.
 
-Before releasing these models, we probed their ability to ease the creation of targeted imagery, since doing so could be potentially harmful.
-We did this either by fine-tuning our ImageNet models on a target LSUN class, or through classifier guidance with publicly available [CLIP models](https://github.com/openai/CLIP).
- * To probe fine-tuning capabilities, we restricted our compute budget to roughly $100 and tried both standard fine-tuning,
-and a diffusion-specific approach where we train a specialized classifier for the LSUN class. The resulting FIDs were significantly worse than publicly available GAN models, indicating that fine-tuning an ImageNet diffusion model does not significantly lower the cost of image generation.
- * To probe guidance with CLIP, we tried two approaches for using pre-trained CLIP models for classifier guidance. Either we fed the noised image to CLIP directly and used its gradients, or we fed the diffusion model's denoised prediction to the CLIP model and differentiated through the whole process. In both cases, we found that it was difficult to recover information from the CLIP model, indicating that these diffusion models are unlikely to make it significantly easier to extract knowledge from CLIP compared to existing GAN models.
-
 # Limitations
 
-These models sometimes produce highly unrealistic outputs, particularly when generating images containing human faces.
-This may stem from ImageNet's emphasis on non-human objects.
-
-While classifier guidance can improve sample quality, it reduces diversity, resulting in some modes of the data distribution being underrepresented.
-This can potentially amplify existing biases in the training dataset such as gender and racial biases.
-
-Because ImageNet and LSUN contain images from the internet, they include photos of real people, and the model may have memorized some of the information contained in these photos.
-However, these images are already publicly available, and existing generative models trained on ImageNet have not demonstrated significant leakage of this information.
+This model often creates dark areas in its samples and oversaturates colors. Furthermore, the atmospheric scattering model used to generate the training data assumes that fog is homogenous, which may not be realistic for real-life scenarios and cause the model to underperform on real-life foggy iamges. Also, the model was trained solely on indoor images, and has not been tested or trained on outdoor foggy images. Lastly, the ability of this model to create harmful targeted imagery was not probed.
