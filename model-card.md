@@ -12,15 +12,17 @@ Here, we describe characteristics of this synthetic dataset which impact model b
  * The atmospheric scattering model assumes that fog is homogenous, which may not be realistic for real-life scenarios.
  * All images from the dataset are indoor images.
 
-# Hyperparameters
+# Hyperparameters and Training
 
-The model was trained with the following commands:
+This model was finetuned off of a modified version of OpenAI's [64x64 -&gt; 256x256 upsampler checkpoint](https://openaipublic.blob.core.windows.net/diffusion/jul-2021/64_256_upsampler.pt) from their repo [openai/guided-diffusion](https://github.com/openai/guided-diffusion) where weights required by class conditional training were removed.
+
+Assuming the modified checkpoint is located at `models/64_256_upsampler.pt`, this model was trained with the following commands:
 
 ```
 MODEL_FLAGS="--num_channels 192 --num_res_blocks 2 --learn_sigma True"
 DIFFUSION_FLAGS="--diffusion_steps 1000 --noise_schedule linear --rescale_learned_sigmas False --rescale_timesteps False"
 TRAIN_FLAGS="--lr 3e-4 --batch_size 4 --lr_anneal_steps 700"
-python scripts/defog_train.py --foggy_data_dir path/to/foggy/images --clear_data_dir path/to/clear/images $MODEL_FLAGS $DIFFUSION_FLAGS $TRAIN_FLAGS
+python scripts/defog_train.py --foggy_data_dir path/to/foggy/images --clear_data_dir path/to/clear/images --resume-checkpoint models/64_256_upsampler.pt $MODEL_FLAGS $DIFFUSION_FLAGS $TRAIN_FLAGS
 ```
 
 # Performance
