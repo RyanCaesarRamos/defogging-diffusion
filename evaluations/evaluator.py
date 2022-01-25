@@ -139,7 +139,7 @@ class NewSSIM(SSIM):
     def compute(self) -> torch.Tensor:
         if self._num_examples == 0:
             raise NotComputableError("SSIM must have at least one example before it can be computed.")
-        return self._sum_of_batchwise_ssim  # type: ignore[arg-type]
+        return self._sum_of_batchwise_ssim / self._num_examples  # type: ignore[arg-type]
 
     
 class PerceptualDistance(_BaseInceptionMetric):
