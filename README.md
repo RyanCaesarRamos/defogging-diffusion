@@ -32,10 +32,10 @@ python super_res_sample.py $MODEL_FLAGS --model_path models/256x256_defogger.pt 
 
 This table summarizes our results on image defogging:
 
-| Dataset                          | PSNR  | SSIM | FID   | IS   | PD    |
-|----------------------------------|-------|------|-------|------|-------|
-| NYU Depth Dataset V2 (synthetic) | 16.67 | 0.80 | 10.79 | 6.07 | 61.13 |
-| I-HAZE                           | 15.39 | 0.66 | 31.59 | 2.79 | 30.09 |
+| Dataset                          | val size | PSNR  | SSIM | FID   | IS   | PD    |
+|----------------------------------|----------|-------|------|-------|------|-------|
+| NYU Depth Dataset V2 (synthetic) | 100      | 16.67 | 0.80 | 10.79 | 6.07 | 61.13 |
+| I-HAZE                           | 7        | 15.39 | 0.66 | 31.59 | 2.79 | 30.09 |
 
 Below are sample qualitative results of our model:
 
