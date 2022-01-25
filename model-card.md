@@ -14,7 +14,7 @@ Here, we describe characteristics of this synthetic dataset which impact model b
 
 # Hyperparameters and Training
 
-This model was finetuned off of a modified version of OpenAI's [64x64 -&gt; 256x256 upsampler checkpoint](https://github.com/openai/guided-diffusion) from their repo [openai/guided-diffusion](https://github.com/openai/guided-diffusion) where weights required by class conditional training were removed.
+This model was finetuned off of a modified version of OpenAI's [64x64 -&gt; 256x256 upsampler checkpoint](https://openaipublic.blob.core.windows.net/diffusion/jul-2021/64_256_upsampler.pt) from their repo [openai/guided-diffusion](https://github.com/openai/guided-diffusion) where weights required by class conditional training were removed.
 
 Assuming the modified checkpoint is located at `models/64_256_upsampler.pt`, this model was trained with the following commands:
 
