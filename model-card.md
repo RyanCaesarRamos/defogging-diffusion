@@ -28,8 +28,8 @@ python scripts/defog_train.py --foggy_data_dir path/to/foggy/images --clear_data
 # Performance
 
 This models is intended to generate fog-free versions of foggy images.
-Model performance has been measured in terms of PSNR, SSIM, FID, IS, and PD.
-The latter three metrics all rely on the representations of a [pre-trained Inception-V3 model](https://arxiv.org/abs/1512.00567),
+Model performance has been measured in terms of PSNR, SSIM, FID, IS, and a modified version of PD that relies on Inception-v3 instead of Inception-v1.
+The latter three metrics all rely on the representations of a [pre-trained Inception-v3 model](https://arxiv.org/abs/1512.00567),
 which was trained on ImageNet, and so is likely to focus more on the ImageNet classes (such as animals) than on other visual features (such as human faces).
 
 Qualitatively, the samples produced by this models often leave behind dark areas and and oversaturated colors.
