@@ -8,7 +8,7 @@ This repository is based on the paper [Diffusion Models Beat GANS on Image Synth
 
 Below is one checkpoint for a model trained on the defogging task. Before using it, please review the corresponding [model card](model-card.md) to understand its intended use and limitations.
 
- * 256x256 defogger: [256x256 defogger.pt](https://drive.google.com/file/d/19wXyyjfH0yDwQFgcyHT7AFhhzN4w7bR0/view)
+ * 256x256 defogger: [256x256_defogger.pt](https://drive.google.com/file/d/19wXyyjfH0yDwQFgcyHT7AFhhzN4w7bR0/view)
 
 # Sampling from pre-trained model
 
