@@ -6,16 +6,16 @@ import argparse
 
 import torch.nn.functional as F
 
-from guided_diffusion import dist_util, logger
-from guided_diffusion.image_datasets import load_paired_data
-from guided_diffusion.resample import create_named_schedule_sampler
-from guided_diffusion.script_util import (
+from defogging_diffusion import dist_util, logger
+from defogging_diffusion.image_datasets import load_paired_data
+from defogging_diffusion.resample import create_named_schedule_sampler
+from defogging_diffusion.script_util import (
     df_model_and_diffusion_defaults,
     df_create_model_and_diffusion,
     args_to_dict,
     add_dict_to_argparser,
 )
-from guided_diffusion.train_util import TrainLoop
+from defogging_diffusion.train_util import TrainLoop
 
 
 def main():
