@@ -26,7 +26,7 @@ def main():
     sample_batch = read_npz(args.ref_batch)
 
     print("Computing evaluations...")
-    metrics = calculate_metrics(sample_batch, ref_batch)
+    metrics = calculate_metrics(ref_batch, sample_batch)
     
     print("PSNR:", metrics['psnr'])
     print("SSIM:", metrics['ssim'])
@@ -35,7 +35,7 @@ def main():
     print("Perceptual Distance:", metrics['pd'])
     
     
-def calculate_metrics(sample_batch, ref_batch):
+def calculate_metrics(ref_batch, sample_batch):
     evaluator = create_supervised_evaluator(DummyModel())
     
     psnr = PSNR(data_range=255)
@@ -63,9 +63,10 @@ class DummyModel(nn.Module):
 
 
 class NewInceptionScore(InceptionScore):
-    # hack to let InceptionScore take in x, y when it only needs x
+    # hack to let InceptionScore take in x, y when it only needs y
     def _extract_features(self, output):
-        return super()._extract_features(output[0])    
+        *_, output = output
+        return super()._extract_features(output)    
     
 
 import torch
