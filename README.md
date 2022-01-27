@@ -56,8 +56,8 @@ Below are sample qualitative results of our model:
 With the following as sample hyperparameters:
 
 ```
-MODEL_FLAGS="--num_channels 192 --num_res_blocks 2 --learn_sigma True"
-DIFFUSION_FLAGS="--diffusion_steps 1000 --noise_schedule linear --rescale_learned_sigmas False --rescale_timesteps False"
+MODEL_FLAGS="--num_channels 192 --num_res_blocks 2 --learn_sigma True --image_size 256 --num_heads 2 --attention_resolutions 32,16,8 --resblock_updown True"
+DIFFUSION_FLAGS="--diffusion_steps 1000 --noise_schedule linear --rescale_learned_sigmas False --rescale_timesteps False --use_scale_shift_norm True"
 TRAIN_FLAGS="--lr 3e-4 --batch_size 4 --lr_anneal_steps 700"
 ```
 
@@ -67,4 +67,4 @@ a model can be trained with the following command:
 python scripts/defog_train.py --foggy_data_dir path/to/foggy/images --clear_data_dir path/to/clear/images $MODEL_FLAGS $DIFFUSION_FLAGS $TRAIN_FLAGS
 ```
 
-More details on training can be found at the [repository](https://github.com/openai/guided-diffusion) this codebase was forked from.
+More details on training can be found at the [repository](https://github.com/openai/guided-diffusion) this codebase was forked from. For the specific hyperparameters the hosted checkpoint was trained with, please see [model-card.md](model-card.md).
