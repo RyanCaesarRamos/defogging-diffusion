@@ -19,6 +19,8 @@ from defogging_diffusion.train_util import TrainLoop
 
 
 def main():
+    args = create_argparser().parse_args()
+    
     dist_util.setup_dist()
     logger.configure()
 
@@ -75,7 +77,8 @@ def load_defog_data(clear_data_dir, foggy_data_dir, batch_size, image_size, clas
 
 def create_argparser():
     defaults = dict(
-        data_dir="",
+        clear_data_dir="",
+        foggy_data_dir="",
         schedule_sampler="uniform",
         lr=1e-4,
         weight_decay=0.0,
