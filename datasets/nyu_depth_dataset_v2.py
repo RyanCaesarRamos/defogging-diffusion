@@ -1,5 +1,5 @@
 """
-Convert an LSUN lmdb database into a directory of images.
+Convert NYU Depth Dataset V2 into synthetic foggy-clear image pairs.
 """
 
 import argparse
