@@ -42,7 +42,6 @@ def main():
 
     logger.log("training...")
     TrainLoop(
-        save_dir=args.save_dir,
         model=model,
         diffusion=diffusion,
         data=data,
@@ -58,7 +57,6 @@ def main():
         schedule_sampler=schedule_sampler,
         weight_decay=args.weight_decay,
         lr_anneal_steps=args.lr_anneal_steps,
-        train_steps=args.train_steps
     ).run_loop()
 
 
